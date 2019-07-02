@@ -122,7 +122,7 @@ import { onPageLoad } from 'meteor/server-render'
 import App from '/imports/App'
 import { DataCaptureProvider } from 'meteor/npdev:collections'
 
-Loadable.preloadAll().then(() => onPageLoad(sink => {
+onPageLoad(sink => {
   const context = {}
 
   // use the DataCaptureProvider with a scoped dataHandle
@@ -141,7 +141,7 @@ Loadable.preloadAll().then(() => onPageLoad(sink => {
 
   // render out the captured data
   sink.appendToBody(dataHandle.toScriptTag())
-}))
+})
 ```
 
 Behind the scenes this provider is watching for all the queries that happen during rendering of the current route, and captures that data in a property on `dataHandle`. Then the `toScriptTag` method is used to render out a `<script>` tag which contains an EJSON encoded copy of all that data. This will be hydrated on the client side, like so:
