@@ -12,71 +12,168 @@ NPDev Collections combines a mix of technologies to facilitate the creation of o
 Why
 ---
 
-To come. Basically, I like Mongo and MiniMongo, and wanted to fill in some gaps, and improve some of the performance characteristics of the existing system.
+Basically, I like Mongo and MiniMongo for it's low bar for entry, and it's simple iteration. It's great for starting new projects and prototyping early and rapidly. I wanted to create something that added a few of the modern touches, like offline-first data, and server side rendering, while retaining that wonderful simplicity as much as possible.
 
 What
 ----
 
-Here is a list of requirements:
+There are a lot moving parts involved getting all the parts working together. Here are some of the hurdles:
 
-- For scale and performance, don't use pub/sub. Use methods to serve and deliver data instead. This is not strictly necessary, but I've found pub/sub to be slow, even just for a single user in many cases. Future versions may have the option to enable pub/sub instead of using methods.
-- Use offline storage client side, instead of temporary in-memory storage (the default for pub/sub).
-- Make it easy to set up the various parts - setup server methods, SSR with data capture, data hydration, and remote syncing over methods.
-- We may also create a way to create non-offline collections easily, and and even pub/sub based solutions for live data sources.
+- Use offline storage client side by default. `ground:db` is a great solution.
+- SSR - for SSR, we have a number of tricky parts to choreograph.
+  - Query Mongo directly, and avoid setting up subscriptions.
+  - Capture the results of queries on the server during SSR, and serialize that data to send to the client.
+  - Hydrate the data from the server on the client, before rendering the react tree.
+  - On first render, don't fetch remote data - we just got that through hydration.
+  - Those same queries must work in an isomorphic way - on the server they must run against mongo directly, on the client, they must fetch data.
+- Use methods for data transfer by default, instead of reactive pub/sub (on the list of TODOs is to allow pub/sub instead of methods).
+  - Also provide a method of pagination by default in the methods.
 
-To do this, we need to keep track of a bunch of tricky things:
+That's a lot of stuff to keep track of, and it's kind of a pain to do it manually. NPDev;Collections keep track of all that for you, and provides the tools to easily set it all up.
 
-- We'll use mongo queries on the server and client, in an isomorphic way. We have a single location, that let's us create an instance of the collection, which is Mongo on the server, and GroundDB on the client. This keeps the code isomorphic, and canonical. The server will use Mongo directly, and never display a loading screen.
-- On the server, during SSR, we'll capture all query data, and output it as JSON (actually, EJSON) for hydration to use. This is done with a Context Provider, which must be configured in the SSR code.
-- The same goes for first-render after hydration on the client - no need to wait for a server round trip, since we already got the data. Instead, hydrate the data, then render the react tree. This is accomplished through a simple Provider, which must be configured in the client side React startup code.
-- Client will fetch data via meteor methods, but will also provide data which may already be in the caches. The isLoading property will only be true during syncing (loading) events.
-- The API should ask for as little code as possible, and set everything up automagically.
+How
+---
 
-All of this takes a lot of coordination. To accomplish that, we have an abstraction which hides that complexity. Here's a high level description of the process.
+- We'll use mongo queries on the server and client, in an isomorphic way. NPDev:Collections provides a createCollection method with a single import location, which delivers Mongo on the server, and GroundDB on the client. This keeps the code isomorphic, and canonical. The server will use Mongo directly, and never display a loading screen.
+- On the server, during SSR, we'll capture all query data, and output it as JSON (actually, EJSON) for hydration to use. This is done with a Context Provider, and a utility method, which must be configured in SSR code using Meteor's `server-render` package.
+- On the client, that data gets hydrated before React is hydrated. We also have to make sure there is no attempt to hit the server to grab data in the first render, since we already got the data. This is accomplished through another simple Provider, and a utility method, which must be configured in the client side React startup code. First hydrate the data, then hydrate react.
+- After the first run (during hydration), the client will fetch data via meteor methods. The isLoading property will only be true during syncing (loading) events.
 
-We use a pattern of "connectors". These accept a set of properties - name, collection, an isomorphic validation method, and an isomorphic query generator. Here is an example from PixStori:
+Quick Start!
+------------
+
+There are a couple of things needed to get this started.
+
+First, you'll need this package. Since it isn't release yet, you'll need to check out this git repo into a local package directory `/packages/npdev-collections` in the root of your meteor project.
+
+Next, all of this is built on an as of yet [unreleased update to `react-meteor-data`](https://github.com/risetechnologies/react-packages/tree/hooks/packages/react-meteor-data) which provides a hook based implementation to replace `withTracker` called `useTracker`. In order to run NPDev:Collections, you'll need to grab a copy of `react-meteor-data` from git, and put it in your local packages directory. Hopefully someone releases that soon (I'll probably release a version of this package soon with a local copy of the new hook).
+
+Last, we also need react and react-dom npm packages of course. These are not defined in this package, so that the version can be kept up to date in the main project. This package requires a version of react which contains support for hooks - 16.8+.
+
+The first thing we need are our collections. They can be created using the simple `createCollection` method. All this is does is create a Meteor Collection on the server, or a Ground:DB server on the client, and connect the schema using `aldeed:collection2`'s attachSchema (on the server). It's necessary to use this method to create your collections to register them with NPDev:Collections. I'll probably add some facilities to allow more granular control over these in the future. Of course, these collections should all be included in the server bundle.
 
 ```js
+import { createCollection } from 'meteor/pixstori:collections'
+import { CommentSchema } from './CommentSchema'
 
-export const useMyTiles = createListHook({
-  name: 'myTiles',
-  collection: Tiles,
-  validate () {
-    if (!Meteor.userId()) {
-      throw new Meteor.Error('access-denied', 'Access Denied')
-    }
-  },
-  query: () => ({ owner: Meteor.isClient && Meteor.userId() })
+const Comments = createCollection('comments', CommentSchema)
+
+export default Comments
+```
+
+Basic use requires the creation of custom hooks for each query you want to set up. The `createListHook` utility function accept a set of properties - name, collection, an isomorphic validation method, and an isomorphic query generator. This API is inspired by, and builds on the API of mdg:validated-method. Here is an example from PixStori:
+
+```js
+import { createListHood } from 'meteor/npdev:collections'
+
+// getPublicQuery builds a query which selects the appropriate public documents
+const getPublicQuery = () => ({
+  public: true
 })
 
-export const useGroupTiles = createListHook({
-  name: 'groupTiles',
-  collection: Tiles,
+export const useComments = createListHook({
+  name: 'tiles',
+  collection: Comments,
+  // This runs on client and server, and in both methods and SSR contexts.
   validate () {},
+  // So does this! Be careful with security.
+  query () {
+    return getPublicQuery()
+  }
+})
+
+export const useGroupComments = createListHook({
+  name: 'groupComments',
+  collection: Comments,
+  validate ({ groupId }) {
+    // Here we could use SimpleSchema and/or throw a validated-error, etc.
+    // See the ValidateMethod documentation for more.
+    check(groupId, String)
+  },
   query: ({ groupId }) => ({
     $and: [
       { groupId },
-      getAccessQuery()
+      getPublicQuery()
     ]
   })
 })
 
 ```
 
-That's it! Using this, along with `createListHook`, it sets up everything we need on the server, and on the client to do offline-first, data-over-methods, with pagination, and SSR, with data hydration, etc. (along with using a set of providers in SSR and hydration code). Super spiffy! In use, it looks like this:
+**NOTE:** *These hooks must be included in the server build, not just in the react tree, but somewhere statically, so they can set up the necessary methods. They don't need to be included statically in the client bundle, which allows for code splitting using the `dynamic-import` package.*
+
+Using this, along with `createListHook`, it sets up everything we need on the server, and on the client to do offline-first, data-over-methods, with pagination, and SSR, with data hydration, etc. (along with using a set of providers in SSR and hydration code). Super spiffy! In use, it looks like this:
 
 ```js
-// Here we use the group tiles with its consistent props contract built off the name prop
-const GroupFeedPage = ({ limit, offset, order, orderBy, ...props }) => {
-  const { groupTiles, groupTilesAreLoading } = useGroupTiles({ limit, offset, order, orderBy })
-  return <FeedPage tiles={groupTiles} isLoading={groupTilesAreLoading} />
+// Here we use the group comments.
+const GroupFeedPage = ({ limit, offset, order, orderBy, groupId }) => {
+  const { groupComments, groupCommentsAreLoading } = useGroupComments({ groupId, limit, offset, order, orderBy })
+  return <FeedPage tiles={groupComments} isLoading={groupCommentsAreLoading} />
 }
+```
 
-// PagedFeed is a generic component which handles pagination and infinite scrolling - example to come...
-const GroupFeed = ({ groupId }) => (
-  <PagedFeed FeedPageComponent={GroupFeedPage} feedPageProps={{ groupId }} />
-)
+That's already a pretty easy way to grab data! But we also want to have SSR with data hydration.
 
+```js
+import React from 'react'
+import { StaticRouter } from 'react-router'
+import { renderToString } from 'react-dom/server'
+import { onPageLoad } from 'meteor/server-render'
+import App from '/imports/App'
+import { DataCaptureProvider } from 'meteor/npdev:collections'
+
+Loadable.preloadAll().then(() => onPageLoad(sink => {
+  const context = {}
+
+  // use the DataCaptureProvider with a scoped dataHandle
+  const dataHandle = {}
+  const app = <DataCaptureProvider handle={dataHandle}>
+    <StaticRouter location={sink.request.url} context={context}>
+      <App />
+    </StaticRouter>
+  </DataCaptureProvider>
+
+  // render the app to html
+  const content = renderToString(app)
+
+  // render out the html
+  sink.renderIntoElementById('root', content)
+
+  // render out the captured data
+  sink.appendToBody(dataHandle.toScriptTag())
+}))
+```
+
+Behind the scenes this provider is watching for all the queries that happen during rendering of the current route, and captures that data in a property on `dataHandle`. Then the `toScriptTag` method is used to render out a `<script>` tag which contains an EJSON encoded copy of all that data. This will be hydrated on the client side, like so:
+
+```js
+onPageLoad(async sink => {
+  import React from 'react'
+  import { hydrate } from 'react-dom'
+  import { BrowserRouter } from 'react-router-dom'
+  import { DataHydrationProvider, hydrateData } from 'meteor/npdev:collections'
+  import App from '/imports/App'
+
+  // Load the data into offline storage
+  hydrateData()
+
+  // The isHydrating flag basically tells the hooks not to bother loading data
+  // over methods, since we just hydrated all the data above.
+  const hydrationHandle = { isHydrating: true }
+
+  const app = <DataHydrationProvider handle={hydrationHandle}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </DataHydrationProvider>
+
+  // hydrate the app using React.hydrate
+  hydrate(app, document.getElementById('root'), () => {
+    // set the isHydrating flag to false, so that subsequent renders will know
+    // to fetch data.
+    hydrationHandle.isHydrating = false
+  })
+})
 ```
 
 TODOS:
