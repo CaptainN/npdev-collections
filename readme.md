@@ -147,7 +147,9 @@ onPageLoad(sink => {
 Behind the scenes this provider is watching for all the queries that happen during rendering of the current route, and captures that data in a property on `dataHandle`. Then the `toScriptTag` method is used to render out a `<script>` tag which contains an EJSON encoded copy of all that data. This will be hydrated on the client side, like so:
 
 ```js
-onPageLoad(async sink => {
+import { onPageLoad } from 'meteor/server-render'
+
+onPageLoad(sink => {
   import React from 'react'
   import { hydrate } from 'react-dom'
   import { BrowserRouter } from 'react-router-dom'
@@ -167,7 +169,8 @@ onPageLoad(async sink => {
     </BrowserRouter>
   </DataHydrationProvider>
 
-  // hydrate the app using React.hydrate
+  // hydrate the app using React.hydrate (<div id="root"></div> defined using
+  // static-html package in /client/main.html)
   hydrate(app, document.getElementById('root'), () => {
     // set the isHydrating flag to false, so that subsequent renders will know
     // to fetch data.
