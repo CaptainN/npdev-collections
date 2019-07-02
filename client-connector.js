@@ -26,7 +26,6 @@ export const createListHook = ({ name, propName, collection, validate, query }) 
 
   return (args = {}, onLoad = null) => {
     const hydrationContext = useContext(ConnectorContext)
-    // isLoading will be true only the first time it's mounted
     const [isLoading, setIsLoading] = useState(false)
     const requestRef = useRef(true)
 
