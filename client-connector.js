@@ -1,7 +1,7 @@
 /* global Meteor */
 import React, { createContext, useState, useContext, useRef } from 'react'
-import { useTracker } from 'meteor/react-meteor-data'
 import { EJSON } from 'meteor/ejson'
+import { useTracker } from './meteor-hook'
 import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
 import { getCollectionByName } from './client-collection'
 
@@ -19,7 +19,7 @@ export const DataHydrationProvider = ({ handle, children }) => {
 }
 
 let requestCounter = 0
-export const createListHook = ({ name, propName, collection, validate, query }) => {
+export const createListHook = ({ name, collection, validate, query }) => {
   const run = makePagedRun(collection, query)
   const dataMethod = makeDataMethod(name, validate, run, query)
   const pruneMethod = makePruneMethod(name, collection, validate, query)
@@ -27,33 +27,35 @@ export const createListHook = ({ name, propName, collection, validate, query }) 
   return (args = {}, onLoad = null) => {
     const hydrationContext = useContext(ConnectorContext)
     const [isLoading, setIsLoading] = useState(false)
-    const requestRef = useRef(true)
+    const { current: refs } = useRef({
+      requestId: requestCounter,
+      onLoad: null,
+      lastArgValues: null
+    })
 
     // If onLoad is defined inline in the user (likely) it's ref will change with each render pass,
     // so we need to make sure we always have the latest one in the effect callback - but we don't
     // want to re-invoke the effect every time the reference changes, which is every time.
-    const onLoadRef = useRef()
-    onLoadRef.current = onLoad
+    refs.onLoad = onLoad
 
     // We only want to refetch data if `args` changes. We also need this to start synchronously,
     // so that we can correctly ascertain whether react is currently hydrating.
-    const lastArgValues = useRef(null)
     const argValues = Object.values(args)
 
     // We don't need to load data, but we need to call onLoad with the correct documents from offline storage.
     // Data should already have been hydrated.
     if (hydrationContext.isHydrating) {
-      if (onLoadRef.current) {
+      if (refs.onLoad) {
         const docs = run(args)
-        onLoadRef.current(docs)
+        refs.onLoad(docs)
       }
-    } else if (!isLoading && !isArgsEqual(argValues, lastArgValues.current)) {
+    } else if (!isLoading && !isArgsEqual(argValues, refs.lastArgValues)) {
       setIsLoading(true)
 
       deferPrune(pruneMethod, collection, query, args)
 
       // Capture requestId in scope, and compare to make sure a new request hasn't started before we're done
-      const requestId = requestRef.current = requestCounter++
+      const requestId = refs.requestId = requestCounter++
       dataMethod.call(args, (err, res) => {
         let docs
         if (err) {
@@ -65,26 +67,24 @@ export const createListHook = ({ name, propName, collection, validate, query }) 
             collection.upsert(doc._id, doc)
           }
         }
-        if (requestId === requestRef.current) {
+        if (requestId === refs.requestId) {
           Meteor.defer(() => {
-            if (requestId !== requestRef.current) {
+            if (requestId !== refs.requestId) {
               return
             }
             setIsLoading(false)
-            if (onLoadRef.current) {
-              onLoadRef.current(docs)
+            if (refs.onLoad) {
+              refs.onLoad(docs)
             }
           })
         }
       })
     }
-    lastArgValues.current = argValues
+    refs.lastArgValues = argValues
 
-    const pName = propName || name
-    return useTracker(() => ({
-      [pName + 'AreLoading']: isLoading,
-      [pName]: run(args)
-    }), [isLoading, ...Object.values(args)])
+    return useTracker(() => [
+      run(args), isLoading
+    ], [isLoading, ...Object.values(args)])
   }
 }
 
