@@ -1,6 +1,6 @@
 import { EJSON } from 'meteor/ejson'
 import React, { createContext, useContext, useRef } from 'react'
-import { useTracker } from 'meteor/react-meteor-data'
+import { useTracker } from './meteor-hook'
 import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
 
 const ConnectorContext = createContext([])
@@ -18,7 +18,7 @@ export const DataCaptureProvider = ({ handle, children }) => {
   </ConnectorContext.Provider>
 }
 
-export const createListHook = ({ name, propName, collection, validate, query }) => {
+export const createListHook = ({ name, collection, validate, query }) => {
   const run = makePagedRun(collection, query)
   makeDataMethod(name, validate, run)
   makePruneMethod(name, collection, validate, query)
@@ -27,11 +27,7 @@ export const createListHook = ({ name, propName, collection, validate, query }) 
     return useTracker(() => {
       const docs = run(args)
       captureData.push({ name: collection._name, docs })
-      const pName = propName || name
-      return {
-        [pName + 'AreLoading']: false,
-        [pName]: docs
-      }
+      return [ docs, false ]
     }, Object.values(args))
   }
 }
