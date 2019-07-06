@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+0.1.3
+-----
+
+Fix error with importing useTracker correctly after making a local copy.
+
 0.1.2
 -----
 

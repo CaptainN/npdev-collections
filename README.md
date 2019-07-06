@@ -1,13 +1,15 @@
 NP Dev Collections
 ==========================
 
-Foundational code for NP Dev Collections was generously donated by PixStori, an aural history social media tool built on Meteor. Tell your stori.
+Foundational code for NP Dev Collections was generously donated by [PixStori](https://www.pixstoriplus.com), an aural history social media tool built on Meteor. Tell your stori.
 
-Install with (not published yet):
+NPDev Collections combines a mix of technologies to facilitate the creation of offline first collections, data over methods with pagination, and support for SSR out of the box.
+
+Install with:
 
 `$ meteor add npdev:collections`
 
-NPDev Collections combines a mix of technologies to facilitate the creation of offline first collections, data over methods with pagination, and support for SSR out of the box.
+[Check out my starter](https://github.com/CaptainN/meteor-react-starter) for a complete example site using NP Dev Collections and other server-render tools.
 
 Why
 ---
