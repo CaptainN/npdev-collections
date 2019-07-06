@@ -1,6 +1,6 @@
 import { EJSON } from 'meteor/ejson'
 import React, { createContext, useContext, useRef } from 'react'
-import { useTracker } from './meteor-hook'
+import useTracker from './meteor-hook'
 import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
 
 const ConnectorContext = createContext([])
