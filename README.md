@@ -42,13 +42,11 @@ How
 Quick Start!
 ------------
 
-There are a couple of things needed to get this started.
+Install with:
 
-First, you'll need this package. Since it isn't release yet, you'll need to check out this git repo into a local package directory `/packages/npdev-collections` in the root of your meteor project.
+`meteor add npdev:collections`
 
-Next, all of this is built on an as of yet [unreleased update to `react-meteor-data`](https://github.com/risetechnologies/react-packages/tree/hooks/packages/react-meteor-data) which provides a hook based implementation to replace `withTracker` called `useTracker`. In order to run NPDev:Collections, you'll need to grab a copy of `react-meteor-data` from git, and put it in your local packages directory. Hopefully someone releases that soon (I'll probably release a version of this package soon with a local copy of the new hook).
-
-Last, we also need react and react-dom npm packages of course. These are not defined in this package, so that the version can be kept up to date in the main project. This package requires a version of react which contains support for hooks - 16.8+.
+We also need react and react-dom npm packages of course. These are not defined in this package, so that the version can be kept up to date in the main project. This package requires a version of react which contains support for hooks - 16.8+.
 
 The first thing we need are our collections. They can be created using the simple `createCollection` method. All this is does is create a Meteor Collection on the server, or a Ground:DB server on the client, and connect the schema using `aldeed:collection2`'s attachSchema (on the server). It's necessary to use this method to create your collections to register them with NPDev:Collections. I'll probably add some facilities to allow more granular control over these in the future. Of course, these collections should all be included in the server bundle.
 
