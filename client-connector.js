@@ -63,7 +63,7 @@ export const createListHook = ({ name, collection, validate, query }) => {
           docs = []
         } else {
           docs = res
-          for (let doc of docs) {
+          for (const doc of docs) {
             collection.upsert(doc._id, doc)
           }
         }
@@ -97,7 +97,7 @@ const deferPrune = (pruneMethod, collection, query, args) => Meteor.defer(() => 
       console.error(err)
       return
     }
-    for (let id of res) {
+    for (const id of res) {
       collection.remove(id)
     }
   })
@@ -114,9 +114,9 @@ export const hydrateData = (id = '__NPCollectionCaptureData__') => {
 }
 export const updateCollections = (data) => {
   const cols = []
-  for (let collectionData of data) {
+  for (const collectionData of data) {
     const col = getCollectionByName(collectionData.name)
-    for (let doc of collectionData.docs) {
+    for (const doc of collectionData.docs) {
       col.upsert(doc._id, doc)
     }
     cols.push(col)
