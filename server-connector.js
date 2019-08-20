@@ -1,6 +1,5 @@
 import { EJSON } from 'meteor/ejson'
 import React, { createContext, useContext, useRef } from 'react'
-import useTracker from './meteor-hook'
 import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
 
 const ConnectorContext = createContext([])
@@ -24,10 +23,8 @@ export const createListHook = ({ name, collection, validate, query }) => {
   makePruneMethod(name, collection, validate, query)
   return (args = {}) => {
     const captureData = useContext(ConnectorContext)
-    return useTracker(() => {
-      const docs = run(args)
-      captureData.push({ name: collection._name, docs })
-      return [ docs, false ]
-    }, Object.values(args))
+    const docs = run(args)
+    captureData.push({ name: collection._name, docs })
+    return [docs, false]
   }
 }
