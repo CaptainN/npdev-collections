@@ -12,8 +12,7 @@ export const DataHydrationProvider = ({ handle, children }) => {
    * Handle should be passed by user in the shape of:
    * { isHydrating: true|false }
    */
-  const ref = useRef(handle)
-  return <ConnectorContext.Provider value={ref.current}>
+  return <ConnectorContext.Provider value={handle}>
     {children}
   </ConnectorContext.Provider>
 }
