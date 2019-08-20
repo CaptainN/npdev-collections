@@ -45,6 +45,7 @@ export const createListHook = ({ name, collection, validate, query }) => {
     // Data should already have been hydrated.
     if (hydrationContext.isHydrating) {
       if (refs.onLoad) {
+        validate(args)
         const docs = run(args)
         refs.onLoad(docs)
       }
@@ -81,9 +82,10 @@ export const createListHook = ({ name, collection, validate, query }) => {
     }
     refs.lastArgValues = argValues
 
-    return useTracker(() => [
-      run(args), isLoading
-    ], [isLoading, ...Object.values(args)])
+    return useTracker(() => {
+      validate(args)
+      return [run(args), isLoading]
+    }, [isLoading, ...Object.values(args)])
   }
 }
 

@@ -22,6 +22,7 @@ export const createListHook = ({ name, collection, validate, query }) => {
   makeDataMethod(name, validate, run)
   makePruneMethod(name, collection, validate, query)
   return (args = {}) => {
+    validate(args)
     const captureData = useContext(ConnectorContext)
     const docs = run(args)
     captureData.push({ name: collection._name, docs })
