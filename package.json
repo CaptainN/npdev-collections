@@ -1,18 +1,18 @@
 {
   "name": "npdev-collections",
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-config-standard-jsx": "^6.0.2",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.2.2",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-config-standard-jsx": "^8.1.0",
     "eslint-import-resolver-meteor": "^0.4.0",
-    "eslint-plugin-import": "^2.17.3",
-    "eslint-plugin-meteor": "^5.1.0",
-    "eslint-plugin-node": "^9.1.0",
-    "eslint-plugin-promise": "^4.1.1",
-    "eslint-plugin-react": "^7.13.0",
-    "eslint-plugin-react-hooks": "^1.6.0",
-    "eslint-plugin-standard": "^4.0.0"
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-meteor": "^6.0.0",
+    "eslint-plugin-node": "^9.2.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^2.0.1",
+    "eslint-plugin-standard": "^4.0.1"
   },
   "eslintConfig": {
     "extends": [
@@ -31,6 +31,8 @@
     ],
     "rules": {
       "jsx-quotes": 0,
+      "react/jsx-closing-tag-location": 0,
+      "react/jsx-wrap-multilines": 0,
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn"
     },
