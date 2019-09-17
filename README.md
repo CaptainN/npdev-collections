@@ -61,7 +61,7 @@ const Comments = createCollection('comments', CommentSchema)
 export default Comments
 ```
 
-Basic use requires the creation of custom hooks for each query you want to set up. The `createListHook` utility function accept a set of properties - name, collection, an isomorphic validation method, and an isomorphic query generator. This API is inspired by, and builds on the API of mdg:validated-method. Here is an example from PixStori:
+Basic use requires the creation of custom hooks for each query you want to set up. The `createConnector` utility function accept a set of properties - name, collection, an isomorphic validation method, and an isomorphic query generator. This API is inspired by, and builds on the API of mdg:validated-method. Here is an example from PixStori:
 
 ```js
 import { createListHood } from 'meteor/npdev:collections'
@@ -71,7 +71,7 @@ const getPublicQuery = () => ({
   public: true
 })
 
-export const useComments = createListHook({
+export const useComments = createConnector({
   name: 'tiles',
   collection: Comments,
   // This runs on client and server, and in both methods and SSR contexts.
@@ -82,7 +82,7 @@ export const useComments = createListHook({
   }
 })
 
-export const useGroupComments = createListHook({
+export const useGroupComments = createConnector({
   name: 'groupComments',
   collection: Comments,
   validate ({ groupId }) {
@@ -102,7 +102,7 @@ export const useGroupComments = createListHook({
 
 **NOTE:** *These hooks must be included in the server build, not just in the react tree, but somewhere statically, so they can set up the necessary methods. They don't need to be included statically in the client bundle, which allows for code splitting using the `dynamic-import` package.*
 
-Using this, along with `createListHook`, it sets up everything we need on the server, and on the client to do offline-first, data-over-methods, with pagination, and SSR, with data hydration, etc. (along with using a set of providers in SSR and hydration code). Super spiffy! In use, it looks like this:
+Using this, along with `createConnector`, it sets up everything we need on the server, and on the client to do offline-first, data-over-methods, with pagination, and SSR, with data hydration, etc. (along with using a set of providers in SSR and hydration code). Super spiffy! In use, it looks like this:
 
 ```js
 // Here we use the group comments.

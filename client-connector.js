@@ -18,7 +18,7 @@ export const DataHydrationProvider = ({ handle, children }) => {
 }
 
 let requestCounter = 0
-export const createListHook = ({ name, collection, validate, query, single = false }) => {
+export const createConnector = ({ name, collection, validate, query, single = false }) => {
   const run = single
     ? makeSingleRun(collection, query)
     : makePagedRun(collection, query)

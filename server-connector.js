@@ -17,7 +17,7 @@ export const DataCaptureProvider = ({ handle, children }) => {
   </ConnectorContext.Provider>
 }
 
-export const createListHook = ({ name, collection, validate, query, single = false }) => {
+export const createConnector = ({ name, collection, validate, query, single = false }) => {
   const run = single
     ? makeSingleRun(collection, query)
     : makePagedRun(collection, query)
