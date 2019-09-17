@@ -1,8 +1,8 @@
 import { EJSON } from 'meteor/ejson'
 import React, { createContext, useContext, useRef } from 'react'
-import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
+import { makePagedRun, makeDataMethod, makePruneMethod, makeSingleRun } from './both'
 
-const ConnectorContext = createContext([])
+const ConnectorContext = createContext()
 export const DataCaptureProvider = ({ handle, children }) => {
   const ref = useRef([])
   handle.data = ref.current
@@ -17,15 +17,17 @@ export const DataCaptureProvider = ({ handle, children }) => {
   </ConnectorContext.Provider>
 }
 
-export const createListHook = ({ name, collection, validate, query }) => {
-  const run = makePagedRun(collection, query)
+export const createListHook = ({ name, collection, validate, query, single = false }) => {
+  const run = single
+    ? makeSingleRun(collection, query)
+    : makePagedRun(collection, query)
   makeDataMethod(name, validate, run)
   makePruneMethod(name, collection, validate, query)
   return (args = {}) => {
     validate(args)
     const captureData = useContext(ConnectorContext)
     const docs = run(args)
-    captureData.push({ name: collection._name, docs })
+    captureData.push({ name: collection._name, docs: single ? [docs] : docs })
     return [docs, false]
   }
 }

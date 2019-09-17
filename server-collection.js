@@ -8,7 +8,7 @@ export const createCollection = (name, schema, indexes = []) => {
   collectionRegistry[name] = Collection
   if (indexes.length > 0) {
     const indexObj = {}
-    for (let index of indexes) {
+    for (const index of indexes) {
       indexObj[index] = 'text'
     }
     Collection.rawCollection().createIndex(indexObj)

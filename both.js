@@ -10,6 +10,10 @@ export const makePagedRun = (collection, query) => ({ limit = 5, offset = 0, ord
   }).fetch()
 )
 
+export const makeSingleRun = (collection, query) => (args) => (
+  collection.findOne(query(args))
+)
+
 export const makeDataMethod = (name, validate, run) => new ValidatedMethod({
   name: 'pixdata:' + name,
   validate ({ limit = 5, offset = 0, order = -1, orderBy = 'createdAt', ...rest }) {

@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useRef } from 'react'
 import { EJSON } from 'meteor/ejson'
 import useTracker from './meteor-hook'
-import { makePagedRun, makeDataMethod, makePruneMethod } from './both'
+import { makePagedRun, makeSingleRun, makeDataMethod, makePruneMethod } from './both'
 import { getCollectionByName } from './client-collection'
 
 const ConnectorContext = createContext(false)
@@ -18,8 +18,10 @@ export const DataHydrationProvider = ({ handle, children }) => {
 }
 
 let requestCounter = 0
-export const createListHook = ({ name, collection, validate, query }) => {
-  const run = makePagedRun(collection, query)
+export const createListHook = ({ name, collection, validate, query, single = false }) => {
+  const run = single
+    ? makeSingleRun(collection, query)
+    : makePagedRun(collection, query)
   const dataMethod = makeDataMethod(name, validate, run, query)
   const pruneMethod = makePruneMethod(name, collection, validate, query)
 
@@ -63,8 +65,12 @@ export const createListHook = ({ name, collection, validate, query }) => {
           docs = []
         } else {
           docs = res
-          for (const doc of docs) {
-            collection.upsert(doc._id, doc)
+          if (single) {
+            collection.upsert(docs._id, docs)
+          } else {
+            for (const doc of docs) {
+              collection.upsert(doc._id, doc)
+            }
           }
         }
         if (requestId === refs.requestId) {
