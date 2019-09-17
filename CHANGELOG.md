@@ -5,9 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Update useTracker to latest PR
-- Always call `validate` before `run` on server and client
-- No need to run through `useTracker` for server rendering
+- Change `createListHook` to `createConnector`. The method still returns a react hook, but it also does other things like setting up server methods. It can now set up a single document data query. For these reasons, a more general name is appropriate.
+- Add a `single` configuration property, to create a connector for a single document.
+- Update useTracker to latest PR.
+- Always call `validate` before `run` on server and client.
+- No need to run through `useTracker` in server rendering.
 
 ## [0.1.3]
 - Fix error with importing useTracker correctly after making a local copy.
