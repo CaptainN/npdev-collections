@@ -53,7 +53,7 @@ We also need react and react-dom npm packages of course. These are not defined i
 The first thing we need are our collections. They can be created using the simple `createCollection` method. All this is does is create a Meteor Collection on the server, or a Ground:DB server on the client, and connect the schema using `aldeed:collection2`'s attachSchema (on the server). It's necessary to use this method to create your collections to register them with NPDev:Collections. I'll probably add some facilities to allow more granular control over these in the future. Of course, these collections should all be included in the server bundle.
 
 ```js
-import { createCollection } from 'meteor/pixstori:collections'
+import { createCollection } from 'meteor/npdev:collections'
 import { CommentSchema } from './CommentSchema'
 
 const Comments = createCollection('comments', CommentSchema)
