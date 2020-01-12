@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0]
 - Change `createListHook` to `createConnector`. The method still returns a react hook, but it also does other things like setting up server methods. It can now set up a single document data query. For these reasons, a more general name is appropriate.
 - Add a `single` configuration property, to create a connector for a single document.
-- Update useTracker to latest PR.
 - Always call `validate` before `run` on server and client.
 - No need to run through `useTracker` in server rendering.
 - Switched to official `react-meteor-data` hook implementation.
