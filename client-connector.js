@@ -1,7 +1,7 @@
 /* global Meteor */
 import React, { createContext, useState, useContext, useRef } from 'react'
 import { EJSON } from 'meteor/ejson'
-import useTracker from './meteor-hook'
+import { useTracker } from 'meteor/react-meteor-data'
 import { makePagedRun, makeSingleRun, makeDataMethod, makePruneMethod } from './both'
 import { getCollectionByName } from './client-collection'
 
