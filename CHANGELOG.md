@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update useTracker to latest PR.
 - Always call `validate` before `run` on server and client.
 - No need to run through `useTracker` in server rendering.
+- Switched to official `react-meteor-data` hook implementation.
+- No longer export `useTracker` - users must migrate to import from `meteor:react-meteor-data`.
 
 ## [0.1.3]
 - Fix error with importing useTracker correctly after making a local copy.
