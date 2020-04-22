@@ -8,7 +8,10 @@ Package.describe({
 })
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.5')
+  api.versionsFrom([
+    'METEOR@1.5',
+    'METEOR@1.10'
+  ])
 
   api.use(['check', 'ecmascript', 'ejson'])
   api.use('mdg:validated-method@1.2.0', ['client', 'server'])
