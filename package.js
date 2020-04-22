@@ -3,7 +3,7 @@ Package.describe({
   name: 'npdev:collections',
   summary: 'An easy way to create offline collections with SSR',
   description: 'An easy way to create offline collections with SSR',
-  version: '0.2.0',
+  version: '0.2.1',
   git: 'https://github.com/CaptainN/npdev-collections'
 })
 
