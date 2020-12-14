@@ -4,7 +4,7 @@ const collectionRegistry = {}
 
 export const createCollection = (name, schema, indexes = []) => {
   const Collection = new Mongo.Collection(name)
-  Collection.attachSchema(schema)
+  if (schema) Collection.attachSchema(schema)
   collectionRegistry[name] = Collection
   if (indexes.length > 0) {
     const indexObj = {}
