@@ -107,7 +107,7 @@ Using this, along with `createConnector`, it sets up everything we need on the s
 ```js
 // Here we use the group comments.
 const GroupFeedPage = ({ limit, offset, order, orderBy, groupId }) => {
-  const { groupComments, groupCommentsAreLoading } = useGroupComments({ groupId, limit, offset, order, orderBy })
+  const [ groupComments, groupCommentsAreLoading ] = useGroupComments({ groupId, limit, offset, order, orderBy })
   return <FeedPage tiles={groupComments} isLoading={groupCommentsAreLoading} />
 }
 ```
